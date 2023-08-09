@@ -1,7 +1,9 @@
 package com.tedisson.test;
 
 
-import com.tedisson.lock.LockFactory;
+import com.tedisson.config.Config;
+import com.tedisson.config.Tedisson;
+import com.tedisson.config.TedissonClient;
 import com.tedisson.lock.TReentrantLock;
 
 import java.util.concurrent.TimeUnit;
@@ -10,7 +12,11 @@ public class TReentrantLockTest2 {
     public static void main(String[] args) throws InterruptedException {
 
         // 创建基于Redis的可重入分布式锁
-        TReentrantLock lock = LockFactory.getReentrantLock("lock-test-1");
+        Config config = new Config();
+        config.setHost("120.26.76.100");
+        TedissonClient tedissonClient = Tedisson.create(config);
+
+        TReentrantLock lock = tedissonClient.getLock("lock-test-1");
 
         Thread thread1 = new Thread(() -> {
             System.out.println("线程1等待获取锁");

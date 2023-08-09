@@ -9,16 +9,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class ConnectionManager {
+public class CManager {
     public static final String LOCK_PREFIX = "lock:";
     public static final String LOCK_RELEASE_CHANNEL = "tedisson-locks";
-    private volatile static ConnectionManager instance;
+    private volatile static CManager instance;
     private final Executor wakeupExecutor = Executors.newSingleThreadExecutor();
     ConcurrentHashMap<String, WakeupLock> wakeupLockMap = new ConcurrentHashMap<>();
     JedisPool jedisPool;
     JedisPoolConfig poolConfig;
 
-    private ConnectionManager() {
+    private CManager() {
         // 配置连接池
         poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(10); // 最大连接数
@@ -50,16 +50,16 @@ public class ConnectionManager {
         return jedisPool;
     }
 
-    public ConnectionManager setJedisPool(JedisPool jedisPool) {
+    public CManager setJedisPool(JedisPool jedisPool) {
         this.jedisPool = jedisPool;
         return this;
     }
 
-    public static ConnectionManager getInstance() {
+    public static CManager getInstance() {
         if (instance == null) {
-            synchronized (ConnectionManager.class) {
+            synchronized (CManager.class) {
                 if (instance == null) {
-                    instance = new ConnectionManager();
+                    instance = new CManager();
                 }
             }
         }

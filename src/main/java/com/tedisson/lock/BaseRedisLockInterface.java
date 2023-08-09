@@ -1,5 +1,8 @@
 package com.tedisson.lock;
 
+import com.tedisson.config.Config;
+import com.tedisson.config.ConnectionManager;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
@@ -9,9 +12,11 @@ public abstract class BaseRedisLockInterface implements RedisLockInterface{
     protected String lockName;
     protected String hostname = "";
     private static final String DELIMITER = ":";
+    protected ConnectionManager connectionManager;
 
-    public BaseRedisLockInterface(String lockName) {
-        this.lockName = lockName;
+    public BaseRedisLockInterface(ConnectionManager connectionManager, String lockName) {
+        this.connectionManager = connectionManager;
+        this.lockName = Config.LOCK_PREFIX + lockName;
         InetAddress localHost = null;
         try {
             localHost = InetAddress.getLocalHost();

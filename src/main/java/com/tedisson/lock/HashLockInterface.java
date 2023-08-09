@@ -1,5 +1,7 @@
 package com.tedisson.lock;
 
+import com.tedisson.config.ConnectionManager;
+
 public class HashLockInterface extends BaseRedisLockInterface {
     private static final String LOCK_SCRIPT =
             "local lockName = KEYS[1]; " +
@@ -31,13 +33,13 @@ public class HashLockInterface extends BaseRedisLockInterface {
                     "    return 0; " +
                     "end";
 
-
-    public HashLockInterface(String lockName) {
-        super(lockName);
+    public HashLockInterface(ConnectionManager connectionManager, String lockName) {
+        super(connectionManager, lockName);
     }
 
+
     public boolean acquireLock(int lockExpiry) {
-        Object result = ConnectionManager.getInstance().getJedisPool().getResource().eval(LOCK_SCRIPT, 1, lockName, getThreadName(), String.valueOf(lockExpiry));
+        Object result = connectionManager.eval(LOCK_SCRIPT, 1, lockName, getThreadName(), String.valueOf(lockExpiry));
         return "1".equals(result.toString());
     }
 
@@ -46,7 +48,7 @@ public class HashLockInterface extends BaseRedisLockInterface {
     }
 
     public int releaseLock() {
-        Object result = ConnectionManager.getInstance().getJedisPool().getResource().eval(RELEASE_SCRIPT, 1, lockName, getThreadName(), ConnectionManager.LOCK_RELEASE_CHANNEL);
+        Object result = connectionManager.eval(RELEASE_SCRIPT, 1, lockName, getThreadName(), CManager.LOCK_RELEASE_CHANNEL);
         return Integer.parseInt(result.toString());
     }
 }

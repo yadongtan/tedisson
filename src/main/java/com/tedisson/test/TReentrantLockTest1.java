@@ -1,15 +1,27 @@
 package com.tedisson.test;
 
-import com.tedisson.lock.LockFactory;
+import com.tedisson.config.Config;
+import com.tedisson.config.Tedisson;
+import com.tedisson.config.TedissonClient;
 import com.tedisson.lock.TReentrantLock;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 在 TReentrantLockTest1 和 TReentrantLockTest2 中
+ * 模拟分布式环境, 创建了名为lock-test-1的锁, 这两个进程中分别有两个线程, 将去争抢锁
+ * 实现同一时刻只有一个线程能获取到锁, 并且当一个jvm进程释放了锁后另一个jvm进程也能及时唤醒线程去抢锁
+ */
 public class TReentrantLockTest1 {
     public static void main(String[] args) throws InterruptedException {
 
         // 创建基于Redis的可重入分布式锁
-        TReentrantLock lock = LockFactory.getReentrantLock("lock-test-1");
+        Config config = new Config();
+        config.setHost("120.26.76.100");
+        TedissonClient tedissonClient = Tedisson.create(config);
+
+        TReentrantLock lock = tedissonClient.getLock("lock-test-1");
+
 
         Thread thread1 = new Thread(() -> {
             System.out.println("线程1等待获取锁");
