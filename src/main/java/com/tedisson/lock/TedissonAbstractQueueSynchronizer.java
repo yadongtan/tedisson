@@ -11,6 +11,36 @@ import java.util.concurrent.locks.*;
 
 public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchronizer{
 
+    private static Unsafe unsafe = null;
+    private static final long stateOffset;
+    private static final long headOffset;
+    private static final long tailOffset;
+    private static final long waitStatusOffset;
+    private static final long nextOffset;
+
+    static {
+        try {
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            unsafe =(Unsafe) field.get(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            stateOffset = unsafe.objectFieldOffset
+                    (java.util.concurrent.locks.AbstractQueuedSynchronizer.class.getDeclaredField("state"));
+            headOffset = unsafe.objectFieldOffset
+                    (java.util.concurrent.locks.AbstractQueuedSynchronizer.class.getDeclaredField("head"));
+            tailOffset = unsafe.objectFieldOffset
+                    (java.util.concurrent.locks.AbstractQueuedSynchronizer.class.getDeclaredField("tail"));
+            waitStatusOffset = unsafe.objectFieldOffset
+                    (Node.class.getDeclaredField("waitStatus"));
+            nextOffset = unsafe.objectFieldOffset
+                    (Node.class.getDeclaredField("next"));
+
+        } catch (Exception ex) { throw new Error(ex); }
+    }
+
         protected TedissonAbstractQueueSynchronizer() { }
 
         static final class Node {
@@ -1376,45 +1406,6 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             }
         }
 
-        /**
-         * Setup to support compareAndSet. We need to natively implement
-         * this here: For the sake of permitting future enhancements, we
-         * cannot explicitly subclass AtomicInteger, which would be
-         * efficient and useful otherwise. So, as the lesser of evils, we
-         * natively implement using hotspot intrinsics API. And while we
-         * are at it, we do the same for other CASable fields (which could
-         * otherwise be done with atomic field updaters).
-         */
-        private static Unsafe unsafe = null;
-        private static final long stateOffset;
-        private static final long headOffset;
-        private static final long tailOffset;
-        private static final long waitStatusOffset;
-        private static final long nextOffset;
-
-        static {
-            try {
-                Field field = Unsafe.class.getDeclaredField("theUnsafe");
-                field.setAccessible(true);
-                unsafe =(Unsafe) field.get(null);
-                // 现在你可以使用 unsafe 对象进行一些操作
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
-                stateOffset = unsafe.objectFieldOffset
-                        (java.util.concurrent.locks.AbstractQueuedSynchronizer.class.getDeclaredField("state"));
-                headOffset = unsafe.objectFieldOffset
-                        (java.util.concurrent.locks.AbstractQueuedSynchronizer.class.getDeclaredField("head"));
-                tailOffset = unsafe.objectFieldOffset
-                        (java.util.concurrent.locks.AbstractQueuedSynchronizer.class.getDeclaredField("tail"));
-                waitStatusOffset = unsafe.objectFieldOffset
-                        (Node.class.getDeclaredField("waitStatus"));
-                nextOffset = unsafe.objectFieldOffset
-                        (Node.class.getDeclaredField("next"));
-
-            } catch (Exception ex) { throw new Error(ex); }
-        }
 
         /**
          * CAS head field. Used only by enq.

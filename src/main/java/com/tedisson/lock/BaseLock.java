@@ -9,8 +9,6 @@ public class BaseLock implements Lock, WakeupLock{
     private final TedissonSync sync;
 
     public BaseLock(RedisLockInterface lockInterface) {
-        // 创建与Redis交互的接口实现类, 这里是hash实现的可重入锁
-        //HashLockInterface hashLockInterface = new HashLockInterface(ConnectionManager.LOCK_PREFIX + lockname);
         // 创建同步队列
         sync = new TedissonSync(lockInterface);
         // 添加到管理器
