@@ -5,7 +5,6 @@ public class TedissonSync extends TedissonAbstractQueueSynchronizer {
 
     public TedissonSync(RedisLockInterface lockInterface) {
         this.lockInterface = lockInterface;
-
     }
 
     public final void lock() {
@@ -17,7 +16,6 @@ public class TedissonSync extends TedissonAbstractQueueSynchronizer {
         if(succ){
             setExclusiveOwnerThread(Thread.currentThread());
         }
-
         return succ;
     }
 

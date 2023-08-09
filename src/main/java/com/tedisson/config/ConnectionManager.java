@@ -40,9 +40,8 @@ public class ConnectionManager {
             @Override
             public void onMessage(String channel, String message) {
                 WakeupLock wakeupLock = wakeupLockMap.get(message);
-                logger.info("[CM] " + message + " 已释放");
+                logger.info("[ConnectionManager] " + message + " 已释放");
                 if (wakeupLock != null) {
-                    wakeupLockMap.remove(message);
                     wakeupLock.wakeup();
                 }
             }

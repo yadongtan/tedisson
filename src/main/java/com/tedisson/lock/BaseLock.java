@@ -11,8 +11,6 @@ public class BaseLock implements Lock, WakeupLock{
     public BaseLock(RedisLockInterface lockInterface) {
         // 创建同步队列
         sync = new TedissonSync(lockInterface);
-        // 添加到管理器
-        CManager.getInstance().addWaitingLock(lockInterface.getLockName(), this);
     }
 
 
