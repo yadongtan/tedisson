@@ -3,15 +3,15 @@ package com.tedisson.lock;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisPubSub;
 
-import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class ConnectionManager {
-    public static final String LOCK_RELEASE_QUEUE = "Tedisson-locks";
+    public static final String LOCK_PREFIX = "lock:";
+    public static final String LOCK_RELEASE_CHANNEL = "tedisson-locks";
     private volatile static ConnectionManager instance;
     private final Executor wakeupExecutor = Executors.newSingleThreadExecutor();
     ConcurrentHashMap<String, WakeupLock> wakeupLockMap = new ConcurrentHashMap<>();
@@ -29,12 +29,22 @@ public class ConnectionManager {
         wakeupExecutor.execute(()->{
             for(;;){
                 Jedis jedis = jedisPool.getResource();
-                String lockName = jedis.blpop(0, LOCK_RELEASE_QUEUE).get(1);
-                WakeupLock wakeupLock = wakeupLockMap.get(lockName);
-                if(wakeupLock != null){
-                    wakeupLockMap.remove(lockName);
-                    wakeupLock.wakeup();
-                }
+
+                JedisPubSub jedisPubSub = new JedisPubSub() {
+                    @Override
+                    public void onMessage(String channel, String message) {
+                        WakeupLock wakeupLock = wakeupLockMap.get(message);
+                        System.out.println("[CM] " + message + " “— Õ∑≈");
+                        if(wakeupLock != null){
+                            wakeupLockMap.remove(message);
+                            wakeupLock.wakeup();
+                        }
+                    }
+                };
+
+                jedis.subscribe(jedisPubSub, LOCK_RELEASE_CHANNEL);
+
+
             }
         });
     }

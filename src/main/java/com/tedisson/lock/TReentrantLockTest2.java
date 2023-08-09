@@ -1,13 +1,9 @@
 package com.tedisson.lock;
 
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
-public class TReentrantLockTest {
+public class TReentrantLockTest2 {
     public static void main(String[] args) throws InterruptedException {
 
         // 创建基于Redis的可重入分布式锁
@@ -18,13 +14,13 @@ public class TReentrantLockTest {
             tReentrantLock.lock();
             System.out.println("线程1获取到锁");
             try {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUnit.SECONDS.sleep(5);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             tReentrantLock.unlock();
             System.out.println("线程1释放锁");
-        }, "thread-1");
+        }, "thread-3");
 
         thread1.start();
         Thread thread2 = new Thread(() -> {
@@ -33,7 +29,7 @@ public class TReentrantLockTest {
             System.out.println("线程2获取到锁");
             tReentrantLock.unlock();
             System.out.println("线程2释放锁");
-        }, "thread-2");
+        }, "thread-4");
 
         thread2.start();
 

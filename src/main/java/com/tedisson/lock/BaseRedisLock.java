@@ -1,6 +1,7 @@
 package com.tedisson.lock;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -9,13 +10,11 @@ import java.util.UUID;
 
 public abstract class BaseRedisLock implements RedisLockInterface{
 
-    protected Jedis jedis;
     protected String lockName;
     protected String hostname = "";
     private static final String DELIMITER = ":";
 
-    public BaseRedisLock(Jedis jedis, String lockName) {
-        this.jedis = jedis;
+    public BaseRedisLock(String lockName) {
         this.lockName = lockName;
         InetAddress localHost = null;
         try {
@@ -34,7 +33,7 @@ public abstract class BaseRedisLock implements RedisLockInterface{
 
     // 判断redis上的锁是否被本地线程持有, 因为有可能被其他机器持有
     public boolean isHeldLocally(){
-        Map<String, String> map = jedis.hgetAll(lockName);
+        Map<String, String> map = ConnectionManager.getInstance().getJedisPool().getResource().hgetAll(lockName);
         for (String s : map.keySet()) {
             if(s == null || "".equals(s)){
                 continue;

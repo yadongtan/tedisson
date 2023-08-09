@@ -1,7 +1,5 @@
 package com.tedisson.lock;
 
-import redis.clients.jedis.Jedis;
-
 public class HashLock extends BaseRedisLock {
     private static final String LOCK_SCRIPT =
             "local lockName = KEYS[1]; " +
@@ -26,7 +24,7 @@ public class HashLock extends BaseRedisLock {
                     "    local count = redis.call('hincrby', KEYS[1], ARGV[1], -1); " +
                     "    if count <= 0 then " +
                     "        redis.call('hdel', KEYS[1], ARGV[1]); " +
-                    "        redis.call('rpush', '" + ConnectionManager.LOCK_RELEASE_QUEUE+ "', ARGV[1])" +
+                    "        redis.call('publish', ARGV[2], KEYS[1]); " +
                     "    end " +
                     "    return count; " +
                     "else " +
@@ -34,12 +32,12 @@ public class HashLock extends BaseRedisLock {
                     "end";
 
 
-    public HashLock(Jedis jedis, String lockName) {
-        super(jedis, lockName);
+    public HashLock(String lockName) {
+        super(lockName);
     }
 
     public boolean acquireLock(int lockExpiry) {
-        Object result = jedis.eval(LOCK_SCRIPT, 1, "lock:" + lockName, getThreadName(), String.valueOf(lockExpiry));
+        Object result = ConnectionManager.getInstance().getJedisPool().getResource().eval(LOCK_SCRIPT, 1, lockName, getThreadName(), String.valueOf(lockExpiry));
         return "1".equals(result.toString());
     }
 
@@ -48,7 +46,7 @@ public class HashLock extends BaseRedisLock {
     }
 
     public int releaseLock() {
-        Object result = jedis.eval(RELEASE_SCRIPT, 1, "lock:" + lockName, getThreadName());
+        Object result = ConnectionManager.getInstance().getJedisPool().getResource().eval(RELEASE_SCRIPT, 1, lockName, getThreadName(), ConnectionManager.LOCK_RELEASE_CHANNEL);
         return Integer.parseInt(result.toString());
     }
 }

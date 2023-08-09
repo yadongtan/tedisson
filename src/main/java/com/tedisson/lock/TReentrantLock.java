@@ -11,7 +11,7 @@ public class TReentrantLock implements Lock, WakeupLock{
     private final TReentantLockSync sync;
 
     public TReentrantLock(String lockname){
-        HashLock rLockWithLua = new HashLock(ConnectionManager.getInstance().getJedisPool().getResource(), lockname);
+        HashLock rLockWithLua = new HashLock(ConnectionManager.LOCK_PREFIX + lockname);
         sync = new TReentantLockSync(this, rLockWithLua);
     }
 

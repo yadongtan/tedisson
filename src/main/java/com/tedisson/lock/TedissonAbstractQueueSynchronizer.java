@@ -11,8 +11,6 @@ import java.util.concurrent.locks.*;
 
 public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchronizer{
 
-        private static final long serialVersionUID = 7373984972572414691L;
-
         /**
          * Creates a new {@code AbstractQueuedSynchronizer} instance
          * with initial synchronization state of zero.
