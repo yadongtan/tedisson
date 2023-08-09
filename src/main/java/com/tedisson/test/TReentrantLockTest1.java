@@ -32,8 +32,8 @@ public class TReentrantLockTest1 {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            lock.unlock();
             System.out.println("线程1释放锁");
+            lock.unlock();
         }, "thread-1");
 
         thread1.start();
@@ -41,8 +41,8 @@ public class TReentrantLockTest1 {
             System.out.println("线程2等待获取锁");
             lock.lock();
             System.out.println("线程2获取到锁");
-            lock.unlock();
             System.out.println("线程2释放锁");
+            lock.unlock();
         }, "thread-2");
 
         thread2.start();
