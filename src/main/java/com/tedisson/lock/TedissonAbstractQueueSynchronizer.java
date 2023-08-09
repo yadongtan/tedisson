@@ -28,11 +28,11 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
         }
         try {
             stateOffset = unsafe.objectFieldOffset
-                    (java.util.concurrent.locks.AbstractQueuedSynchronizer.class.getDeclaredField("state"));
+                    (TedissonAbstractQueueSynchronizer.class.getDeclaredField("state"));
             headOffset = unsafe.objectFieldOffset
-                    (java.util.concurrent.locks.AbstractQueuedSynchronizer.class.getDeclaredField("head"));
+                    (TedissonAbstractQueueSynchronizer.class.getDeclaredField("head"));
             tailOffset = unsafe.objectFieldOffset
-                    (java.util.concurrent.locks.AbstractQueuedSynchronizer.class.getDeclaredField("tail"));
+                    (TedissonAbstractQueueSynchronizer.class.getDeclaredField("tail"));
             waitStatusOffset = unsafe.objectFieldOffset
                     (Node.class.getDeclaredField("waitStatus"));
             nextOffset = unsafe.objectFieldOffset
@@ -972,7 +972,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
 
         /**
          * Condition implementation for a {@link
-         * java.util.concurrent.locks.AbstractQueuedSynchronizer} serving as the basis of a {@link
+         * TedissonAbstractQueueSynchronizer} serving as the basis of a {@link
          * Lock} implementation.
          *
          * <p>Method documentation for this class describes mechanics,
@@ -1346,7 +1346,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
 
             /**
              * Queries whether any threads are waiting on this condition.
-             * Implements {@link java.util.concurrent.locks.AbstractQueuedSynchronizer#hasWaiters(java.util.concurrent.locks.AbstractQueuedSynchronizer.ConditionObject)}.
+             * Implements {@link TedissonAbstractQueueSynchronizer#hasWaiters(TedissonAbstractQueueSynchronizer.ConditionObject)}.
              *
              * @return {@code true} if there are any waiting threads
              * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
@@ -1365,7 +1365,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             /**
              * Returns an estimate of the number of threads waiting on
              * this condition.
-             * Implements {@link java.util.concurrent.locks.AbstractQueuedSynchronizer#getWaitQueueLength(java.util.concurrent.locks.AbstractQueuedSynchronizer.ConditionObject)}.
+             * Implements {@link TedissonAbstractQueueSynchronizer#getWaitQueueLength(TedissonAbstractQueueSynchronizer.ConditionObject)}.
              *
              * @return the estimated number of waiting threads
              * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
@@ -1385,7 +1385,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             /**
              * Returns a collection containing those threads that may be
              * waiting on this Condition.
-             * Implements {@link java.util.concurrent.locks.AbstractQueuedSynchronizer#getWaitingThreads(java.util.concurrent.locks.AbstractQueuedSynchronizer.ConditionObject)}.
+             * Implements {@link TedissonAbstractQueueSynchronizer#getWaitingThreads(TedissonAbstractQueueSynchronizer.ConditionObject)}.
              *
              * @return the collection of threads
              * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
