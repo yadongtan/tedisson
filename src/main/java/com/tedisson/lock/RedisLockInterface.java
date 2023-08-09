@@ -7,4 +7,6 @@ public interface RedisLockInterface {
     boolean acquireLock();
 
     int releaseLock();
+
+    String getLockName();
 }

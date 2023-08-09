@@ -41,10 +41,7 @@ public class ConnectionManager {
                         }
                     }
                 };
-
                 jedis.subscribe(jedisPubSub, LOCK_RELEASE_CHANNEL);
-
-
             }
         });
     }

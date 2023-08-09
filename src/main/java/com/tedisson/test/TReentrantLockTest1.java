@@ -1,35 +1,37 @@
-package com.tedisson.lock;
+package com.tedisson.test;
 
+import com.tedisson.lock.LockFactory;
+import com.tedisson.lock.TReentrantLock;
 
 import java.util.concurrent.TimeUnit;
 
-public class TReentrantLockTest2 {
+public class TReentrantLockTest1 {
     public static void main(String[] args) throws InterruptedException {
 
         // 创建基于Redis的可重入分布式锁
-        TReentrantLock tReentrantLock = new TReentrantLock("lock-test-1");
+        TReentrantLock lock = LockFactory.getReentrantLock("lock-test-1");
 
         Thread thread1 = new Thread(() -> {
             System.out.println("线程1等待获取锁");
-            tReentrantLock.lock();
+            lock.lock();
             System.out.println("线程1获取到锁");
             try {
-                TimeUnit.SECONDS.sleep(5);
+                TimeUnit.SECONDS.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            tReentrantLock.unlock();
+            lock.unlock();
             System.out.println("线程1释放锁");
-        }, "thread-3");
+        }, "thread-1");
 
         thread1.start();
         Thread thread2 = new Thread(() -> {
             System.out.println("线程2等待获取锁");
-            tReentrantLock.lock();
+            lock.lock();
             System.out.println("线程2获取到锁");
-            tReentrantLock.unlock();
+            lock.unlock();
             System.out.println("线程2释放锁");
-        }, "thread-4");
+        }, "thread-2");
 
         thread2.start();
 

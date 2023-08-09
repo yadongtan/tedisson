@@ -1,6 +1,6 @@
 package com.tedisson.lock;
 
-public class HashLock extends BaseRedisLock {
+public class HashLockInterface extends BaseRedisLockInterface {
     private static final String LOCK_SCRIPT =
             "local lockName = KEYS[1]; " +
                     "local threadName = ARGV[1]; " +
@@ -32,7 +32,7 @@ public class HashLock extends BaseRedisLock {
                     "end";
 
 
-    public HashLock(String lockName) {
+    public HashLockInterface(String lockName) {
         super(lockName);
     }
 
