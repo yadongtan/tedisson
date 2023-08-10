@@ -114,6 +114,9 @@ public class TLock implements Lock, WakeupLock{
         return sync.getWaitingThreads((TedissonAbstractQueueSynchronizer.ConditionObject)condition);
     }
 
+    public Thread getOwnerThread(){
+        return sync.getOwner();
+    }
 
     public String toString() {
         Thread o = sync.getOwner();

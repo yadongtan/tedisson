@@ -1,5 +1,6 @@
 package com.tedisson.config;
 
+import com.tedisson.lock.RenewExpirationManager;
 import com.tedisson.lock.WakeupLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +17,14 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
     protected ConcurrentHashMap<String, Jedis> subscribedJedisMap;
     protected ConcurrentHashMap<String, JedisPubSub> subscribedJedisPubSubMap;
     protected Executor subscribeExecutors;
+    protected RenewExpirationManager renewExpirationManager;
 
 
     public AbstractConnectionManager(){
         subscribeExecutors = Executors.newCachedThreadPool();
         subscribedJedisMap = new ConcurrentHashMap<>();
         subscribedJedisPubSubMap = new ConcurrentHashMap<>();
+        renewExpirationManager = new RenewExpirationManager();
     }
 
     public abstract JedisPool getChannelJedisPool();
@@ -67,5 +70,9 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.publish(Config.LOCK_RELEASE_CHANNEL, message);
         }
+    }
+
+    public long keyTTL(String key){
+        return 0L;
     }
 }

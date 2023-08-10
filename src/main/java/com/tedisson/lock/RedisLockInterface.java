@@ -9,4 +9,6 @@ public interface RedisLockInterface {
     int releaseLock();
 
     String getLockName();
+
+
 }

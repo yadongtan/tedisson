@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TReentrantLockTest2 {
 
-    private static final Logger log = LoggerFactory.getLogger(TReentrantLockTest1.class);
+    private static final Logger log = LoggerFactory.getLogger(TReentrantLockTest2.class);
 
     public static void main(String[] args) throws InterruptedException {
 
@@ -23,24 +23,24 @@ public class TReentrantLockTest2 {
         TLock lock = tedissonClient.getReentrantLock("lock-test-1");
 
         Thread thread1 = new Thread(() -> {
-            System.out.println("线程1等待获取锁");
+            log.info("线程1等待获取锁");
             lock.lock();
-            System.out.println("线程1获取到锁");
+            log.info("线程1获取到锁");
             try {
                 TimeUnit.SECONDS.sleep(5);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println("线程1释放锁");
+            log.info("线程1释放锁");
             lock.unlock();
         }, "thread-3");
 
         thread1.start();
         Thread thread2 = new Thread(() -> {
-            System.out.println("线程2等待获取锁");
+            log.info("线程2等待获取锁");
             lock.lock();
-            System.out.println("线程2获取到锁");
-            System.out.println("线程2释放锁");
+            log.info("线程2获取到锁");
+            log.info("线程2释放锁");
             lock.unlock();
         }, "thread-4");
 

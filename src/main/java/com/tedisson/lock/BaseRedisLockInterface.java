@@ -32,8 +32,12 @@ public abstract class BaseRedisLockInterface implements RedisLockInterface{
         this.hostname = localHost.getHostName();
     }
 
-    public String getThreadName(){
-        return hostname + DELIMITER + Thread.currentThread();
+    public String getCurrentThreadName(){
+        return hostname + DELIMITER + Thread.currentThread().getName();
+    }
+
+    public String getThreadName(Thread thread){
+        return hostname + DELIMITER + thread.getName();
     }
 
     public String getLockName(){

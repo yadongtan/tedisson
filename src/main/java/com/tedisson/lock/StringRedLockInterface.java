@@ -28,7 +28,7 @@ public class StringRedLockInterface extends BaseRedisLockInterface {
 
     @Override
     public boolean acquireLock(int lockExpiry) {
-        Object result = connectionManager.eval(LOCK_SCRIPT, 1, getLockName(), getThreadName(), String.valueOf(lockExpiry));
+        Object result = connectionManager.eval(LOCK_SCRIPT, 1, getLockName(), getCurrentThreadName(), String.valueOf(lockExpiry));
         if(result != null){
             if((int)result == 1){
                 return true;
@@ -49,10 +49,11 @@ public class StringRedLockInterface extends BaseRedisLockInterface {
     // 始终返回0, 意思是释放锁成功, 以保证能把唤醒节点去抢锁
     @Override
     public int releaseLock() {
-        Object result = connectionManager.eval(RELEASE_SCRIPT, 1, getLockName(), getThreadName());
+        Object result = connectionManager.eval(RELEASE_SCRIPT, 1, getLockName(), getCurrentThreadName());
         if(result != null && (int)result == 1){
             connectionManager.publishReleasedLock(getLockName());
         }
         return 0;
     }
+
 }

@@ -31,8 +31,6 @@ public class SingleConnectionManager extends AbstractConnectionManager {
 
 
 
-
-
     public Object eval(String script, int keyCount, String... params){
         Jedis jedis = mainJedisPool.getResource();
         try{
@@ -41,7 +39,6 @@ public class SingleConnectionManager extends AbstractConnectionManager {
         }finally {
             jedis.close();
         }
-
     }
 
     @Override

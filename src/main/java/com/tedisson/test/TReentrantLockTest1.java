@@ -34,7 +34,7 @@ public class TReentrantLockTest1 {
             lock.lock();
             log.info("线程1获取到锁");
             try {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUnit.SECONDS.sleep(60);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -43,15 +43,15 @@ public class TReentrantLockTest1 {
         }, "thread-1");
 
         thread1.start();
-        Thread thread2 = new Thread(() -> {
-            log.info("线程2等待获取锁");
-            lock.lock();
-            log.info("线程2获取到锁");
-            log.info("线程2释放锁");
-            lock.unlock();
-        }, "thread-2");
-
-        thread2.start();
+//        Thread thread2 = new Thread(() -> {
+//            log.info("线程2等待获取锁");
+//            lock.lock();
+//            log.info("线程2获取到锁");
+//            log.info("线程2释放锁");
+//            lock.unlock();
+//        }, "thread-2");
+//
+//        thread2.start();
 
         TimeUnit.SECONDS.sleep(100000);
     }
