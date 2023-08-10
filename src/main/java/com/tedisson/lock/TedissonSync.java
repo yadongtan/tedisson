@@ -22,7 +22,7 @@ public class TedissonSync extends TedissonAbstractQueueSynchronizer {
     protected final boolean tryRelease(int releases) {
         int count = lockInterface.releaseLock();
         if(count < 0){
-            throw new IllegalMonitorStateException();
+            return true; //
         }
         if(count == 0){
             setExclusiveOwnerThread(null);

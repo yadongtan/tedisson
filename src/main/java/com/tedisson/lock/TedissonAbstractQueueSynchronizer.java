@@ -44,21 +44,12 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
         protected TedissonAbstractQueueSynchronizer() { }
 
         static final class Node {
-            /** Marker to indicate a node is waiting in shared mode */
             static final Node SHARED = new Node();
-            /** Marker to indicate a node is waiting in exclusive mode */
             static final Node EXCLUSIVE = null;
 
-            /** waitStatus value to indicate thread has cancelled */
             static final int CANCELLED =  1;
-            /** waitStatus value to indicate successor's thread needs unparking */
             static final int SIGNAL    = -1;
-            /** waitStatus value to indicate thread is waiting on condition */
             static final int CONDITION = -2;
-            /**
-             * waitStatus value to indicate the next acquireShared should
-             * unconditionally propagate
-             */
             static final int PROPAGATE = -3;
 
             volatile int waitStatus;
@@ -165,21 +156,10 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
         }
 
         public void unparkSuccessor(Node node) {
-            /*
-             * If status is negative (i.e., possibly needing signal) try
-             * to clear in anticipation of signalling.  It is OK if this
-             * fails or if status is changed by waiting thread.
-             */
             int ws = node.waitStatus;
             if (ws < 0)
                 compareAndSetWaitStatus(node, ws, 0);
 
-            /*
-             * Thread to unpark is held in successor, which is normally
-             * just the next node.  But if cancelled or apparently null,
-             * traverse backwards from tail to find the actual
-             * non-cancelled successor.
-             */
             Node s = node.next;
             if (s == null || s.waitStatus > 0) {
                 s = null;
@@ -192,17 +172,6 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
         }
 
         private void doReleaseShared() {
-            /*
-             * Ensure that a release propagates, even if there are other
-             * in-progress acquires/releases.  This proceeds in the usual
-             * way of trying to unparkSuccessor of head if it needs
-             * signal. But if it does not, status is set to PROPAGATE to
-             * ensure that upon release, propagation continues.
-             * Additionally, we must loop in case a new node is added
-             * while we are doing this. Also, unlike other uses of
-             * unparkSuccessor, we need to know if CAS to reset status
-             * fails, if so rechecking.
-             */
             for (;;) {
                 Node h = head;
                 if (h != null && h != tail) {
@@ -224,22 +193,6 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
         private void setHeadAndPropagate(Node node, int propagate) {
             Node h = head; // Record old head for check below
             setHead(node);
-            /*
-             * Try to signal next queued node if:
-             *   Propagation was indicated by caller,
-             *     or was recorded (as h.waitStatus either before
-             *     or after setHead) by a previous operation
-             *     (note: this uses sign-check of waitStatus because
-             *      PROPAGATE status may transition to SIGNAL.)
-             * and
-             *   The next node is waiting in shared mode,
-             *     or we don't know, because it appears null
-             *
-             * The conservatism in both of these checks may cause
-             * unnecessary wake-ups, but only when there are multiple
-             * racing acquires/releases, so most need signals now or soon
-             * anyway.
-             */
             if (propagate > 0 || h == null || h.waitStatus < 0 ||
                     (h = head) == null || h.waitStatus < 0) {
                 Node s = node.next;
@@ -741,14 +694,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             return list;
         }
 
-        /**
-         * Returns a collection containing threads that may be waiting to
-         * acquire in shared mode. This has the same properties
-         * as {@link #getQueuedThreads} except that it only returns
-         * those threads waiting due to a shared acquire.
-         *
-         * @return the collection of threads
-         */
+
         public final Collection<Thread> getSharedQueuedThreads() {
             ArrayList<Thread> list = new ArrayList<Thread>();
             for (Node p = tail; p != null; p = p.prev) {
@@ -761,15 +707,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             return list;
         }
 
-        /**
-         * Returns a string identifying this synchronizer, as well as its state.
-         * The state, in brackets, includes the String {@code "State ="}
-         * followed by the current value of {@link #getState}, and either
-         * {@code "nonempty"} or {@code "empty"} depending on whether the
-         * queue is empty.
-         *
-         * @return a string identifying this synchronizer, as well as its state
-         */
+
         public String toString() {
             int s = getState();
             String q  = hasQueuedThreads() ? "non" : "";
@@ -845,13 +783,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             return true;
         }
 
-        /**
-         * Transfers node, if necessary, to sync queue after a cancelled wait.
-         * Returns true if thread was cancelled before being signalled.
-         *
-         * @param node the node
-         * @return true if cancelled before the node was signalled
-         */
+
         final boolean transferAfterCancelledWait(Node node) {
             if (compareAndSetWaitStatus(node, Node.CONDITION, 0)) {
                 enq(node);
@@ -868,12 +800,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             return false;
         }
 
-        /**
-         * Invokes release with current state value; returns saved state.
-         * Cancels node and throws exception on failure.
-         * @param node the condition node for this wait
-         * @return previous sync state
-         */
+
         final int fullyRelease(Node node) {
             boolean failed = true;
             try {
@@ -892,99 +819,33 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
 
         // Instrumentation methods for conditions
 
-        /**
-         * Queries whether the given ConditionObject
-         * uses this synchronizer as its lock.
-         *
-         * @param condition the condition
-         * @return {@code true} if owned
-         * @throws NullPointerException if the condition is null
-         */
+
         public final boolean owns(ConditionObject condition) {
             return condition.isOwnedBy(this);
         }
 
-        /**
-         * Queries whether any threads are waiting on the given condition
-         * associated with this synchronizer. Note that because timeouts
-         * and interrupts may occur at any time, a {@code true} return
-         * does not guarantee that a future {@code signal} will awaken
-         * any threads.  This method is designed primarily for use in
-         * monitoring of the system state.
-         *
-         * @param condition the condition
-         * @return {@code true} if there are any waiting threads
-         * @throws IllegalMonitorStateException if exclusive synchronization
-         *         is not held
-         * @throws IllegalArgumentException if the given condition is
-         *         not associated with this synchronizer
-         * @throws NullPointerException if the condition is null
-         */
+
         public final boolean hasWaiters(ConditionObject condition) {
             if (!owns(condition))
                 throw new IllegalArgumentException("Not owner");
             return condition.hasWaiters();
         }
 
-        /**
-         * Returns an estimate of the number of threads waiting on the
-         * given condition associated with this synchronizer. Note that
-         * because timeouts and interrupts may occur at any time, the
-         * estimate serves only as an upper bound on the actual number of
-         * waiters.  This method is designed for use in monitoring of the
-         * system state, not for synchronization control.
-         *
-         * @param condition the condition
-         * @return the estimated number of waiting threads
-         * @throws IllegalMonitorStateException if exclusive synchronization
-         *         is not held
-         * @throws IllegalArgumentException if the given condition is
-         *         not associated with this synchronizer
-         * @throws NullPointerException if the condition is null
-         */
+
         public final int getWaitQueueLength(ConditionObject condition) {
             if (!owns(condition))
                 throw new IllegalArgumentException("Not owner");
             return condition.getWaitQueueLength();
         }
 
-        /**
-         * Returns a collection containing those threads that may be
-         * waiting on the given condition associated with this
-         * synchronizer.  Because the actual set of threads may change
-         * dynamically while constructing this result, the returned
-         * collection is only a best-effort estimate. The elements of the
-         * returned collection are in no particular order.
-         *
-         * @param condition the condition
-         * @return the collection of threads
-         * @throws IllegalMonitorStateException if exclusive synchronization
-         *         is not held
-         * @throws IllegalArgumentException if the given condition is
-         *         not associated with this synchronizer
-         * @throws NullPointerException if the condition is null
-         */
+
         public final Collection<Thread> getWaitingThreads(ConditionObject condition) {
             if (!owns(condition))
                 throw new IllegalArgumentException("Not owner");
             return condition.getWaitingThreads();
         }
 
-        /**
-         * Condition implementation for a {@link
-         * TedissonAbstractQueueSynchronizer} serving as the basis of a {@link
-         * Lock} implementation.
-         *
-         * <p>Method documentation for this class describes mechanics,
-         * not behavioral specifications from the point of view of Lock
-         * and Condition users. Exported versions of this class will in
-         * general need to be accompanied by documentation describing
-         * condition semantics that rely on those of the associated
-         * {@code AbstractQueuedSynchronizer}.
-         *
-         * <p>This class is Serializable, but all fields are transient,
-         * so deserialized conditions have no waiters.
-         */
+
         public class ConditionObject implements Condition, java.io.Serializable {
             private static final long serialVersionUID = 1173984872572414699L;
             /** First node of condition queue. */
@@ -992,17 +853,12 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             /** Last node of condition queue. */
             private transient Node lastWaiter;
 
-            /**
-             * Creates a new {@code ConditionObject} instance.
-             */
+
             public ConditionObject() { }
 
             // Internal methods
 
-            /**
-             * Adds a new waiter to wait queue.
-             * @return its new wait node
-             */
+
             private Node addConditionWaiter() {
                 Node t = lastWaiter;
                 // If lastWaiter is cancelled, clean out.
@@ -1019,12 +875,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                 return node;
             }
 
-            /**
-             * Removes and transfers nodes until hit non-cancelled one or
-             * null. Split out from signal in part to encourage compilers
-             * to inline the case of no waiters.
-             * @param first (non-null) the first node on condition queue
-             */
+
             private void doSignal(Node first) {
                 do {
                     if ( (firstWaiter = first.nextWaiter) == null)
@@ -1034,10 +885,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                         (first = firstWaiter) != null);
             }
 
-            /**
-             * Removes and transfers all nodes.
-             * @param first (non-null) the first node on condition queue
-             */
+
             private void doSignalAll(Node first) {
                 lastWaiter = firstWaiter = null;
                 do {
@@ -1048,20 +896,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                 } while (first != null);
             }
 
-            /**
-             * Unlinks cancelled waiter nodes from condition queue.
-             * Called only while holding lock. This is called when
-             * cancellation occurred during condition wait, and upon
-             * insertion of a new waiter when lastWaiter is seen to have
-             * been cancelled. This method is needed to avoid garbage
-             * retention in the absence of signals. So even though it may
-             * require a full traversal, it comes into play only when
-             * timeouts or cancellations occur in the absence of
-             * signals. It traverses all nodes rather than stopping at a
-             * particular target to unlink all pointers to garbage nodes
-             * without requiring many re-traversals during cancellation
-             * storms.
-             */
+
             private void unlinkCancelledWaiters() {
                 Node t = firstWaiter;
                 Node trail = null;
@@ -1084,14 +919,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
 
             // public methods
 
-            /**
-             * Moves the longest-waiting thread, if one exists, from the
-             * wait queue for this condition to the wait queue for the
-             * owning lock.
-             *
-             * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
-             *         returns {@code false}
-             */
+
             public final void signal() {
                 if (!isHeldExclusively())
                     throw new IllegalMonitorStateException();
@@ -1100,13 +928,6 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                     doSignal(first);
             }
 
-            /**
-             * Moves all threads from the wait queue for this condition to
-             * the wait queue for the owning lock.
-             *
-             * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
-             *         returns {@code false}
-             */
             public final void signalAll() {
                 if (!isHeldExclusively())
                     throw new IllegalMonitorStateException();
@@ -1115,17 +936,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                     doSignalAll(first);
             }
 
-            /**
-             * Implements uninterruptible condition wait.
-             * <ol>
-             * <li> Save lock state returned by {@link #getState}.
-             * <li> Invoke {@link #release} with saved state as argument,
-             *      throwing IllegalMonitorStateException if it fails.
-             * <li> Block until signalled.
-             * <li> Reacquire by invoking specialized version of
-             *      {@link #acquire} with saved state as argument.
-             * </ol>
-             */
+
             public final void awaitUninterruptibly() {
                 Node node = addConditionWaiter();
                 int savedState = fullyRelease(node);
@@ -1151,21 +962,13 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             /** Mode meaning to throw InterruptedException on exit from wait */
             private static final int THROW_IE    = -1;
 
-            /**
-             * Checks for interrupt, returning THROW_IE if interrupted
-             * before signalled, REINTERRUPT if after signalled, or
-             * 0 if not interrupted.
-             */
+
             private int checkInterruptWhileWaiting(Node node) {
                 return Thread.interrupted() ?
                         (transferAfterCancelledWait(node) ? THROW_IE : REINTERRUPT) :
                         0;
             }
 
-            /**
-             * Throws InterruptedException, reinterrupts current thread, or
-             * does nothing, depending on mode.
-             */
             private void reportInterruptAfterWait(int interruptMode)
                     throws InterruptedException {
                 if (interruptMode == THROW_IE)
@@ -1174,19 +977,6 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                     selfInterrupt();
             }
 
-            /**
-             * Implements interruptible condition wait.
-             * <ol>
-             * <li> If current thread is interrupted, throw InterruptedException.
-             * <li> Save lock state returned by {@link #getState}.
-             * <li> Invoke {@link #release} with saved state as argument,
-             *      throwing IllegalMonitorStateException if it fails.
-             * <li> Block until signalled or interrupted.
-             * <li> Reacquire by invoking specialized version of
-             *      {@link #acquire} with saved state as argument.
-             * <li> If interrupted while blocked in step 4, throw InterruptedException.
-             * </ol>
-             */
             public final void await() throws InterruptedException {
                 if (Thread.interrupted())
                     throw new InterruptedException();
@@ -1206,19 +996,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                     reportInterruptAfterWait(interruptMode);
             }
 
-            /**
-             * Implements timed condition wait.
-             * <ol>
-             * <li> If current thread is interrupted, throw InterruptedException.
-             * <li> Save lock state returned by {@link #getState}.
-             * <li> Invoke {@link #release} with saved state as argument,
-             *      throwing IllegalMonitorStateException if it fails.
-             * <li> Block until signalled, interrupted, or timed out.
-             * <li> Reacquire by invoking specialized version of
-             *      {@link #acquire} with saved state as argument.
-             * <li> If interrupted while blocked in step 4, throw InterruptedException.
-             * </ol>
-             */
+
             public final long awaitNanos(long nanosTimeout)
                     throws InterruptedException {
                 if (Thread.interrupted())
@@ -1247,20 +1025,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                 return deadline - System.nanoTime();
             }
 
-            /**
-             * Implements absolute timed condition wait.
-             * <ol>
-             * <li> If current thread is interrupted, throw InterruptedException.
-             * <li> Save lock state returned by {@link #getState}.
-             * <li> Invoke {@link #release} with saved state as argument,
-             *      throwing IllegalMonitorStateException if it fails.
-             * <li> Block until signalled, interrupted, or timed out.
-             * <li> Reacquire by invoking specialized version of
-             *      {@link #acquire} with saved state as argument.
-             * <li> If interrupted while blocked in step 4, throw InterruptedException.
-             * <li> If timed out while blocked in step 4, return false, else true.
-             * </ol>
-             */
+
             public final boolean awaitUntil(Date deadline)
                     throws InterruptedException {
                 long abstime = deadline.getTime();
@@ -1288,20 +1053,6 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                 return !timedout;
             }
 
-            /**
-             * Implements timed condition wait.
-             * <ol>
-             * <li> If current thread is interrupted, throw InterruptedException.
-             * <li> Save lock state returned by {@link #getState}.
-             * <li> Invoke {@link #release} with saved state as argument,
-             *      throwing IllegalMonitorStateException if it fails.
-             * <li> Block until signalled, interrupted, or timed out.
-             * <li> Reacquire by invoking specialized version of
-             *      {@link #acquire} with saved state as argument.
-             * <li> If interrupted while blocked in step 4, throw InterruptedException.
-             * <li> If timed out while blocked in step 4, return false, else true.
-             * </ol>
-             */
             public final boolean await(long time, TimeUnit unit)
                     throws InterruptedException {
                 long nanosTimeout = unit.toNanos(time);
@@ -1333,25 +1084,10 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
             }
 
             //  support for instrumentation
-
-            /**
-             * Returns true if this condition was created by the given
-             * synchronization object.
-             *
-             * @return {@code true} if owned
-             */
             final boolean isOwnedBy(TedissonAbstractQueueSynchronizer sync) {
                 return sync == TedissonAbstractQueueSynchronizer.this;
             }
 
-            /**
-             * Queries whether any threads are waiting on this condition.
-             * Implements {@link TedissonAbstractQueueSynchronizer#hasWaiters(TedissonAbstractQueueSynchronizer.ConditionObject)}.
-             *
-             * @return {@code true} if there are any waiting threads
-             * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
-             *         returns {@code false}
-             */
             protected final boolean hasWaiters() {
                 if (!isHeldExclusively())
                     throw new IllegalMonitorStateException();
@@ -1362,15 +1098,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                 return false;
             }
 
-            /**
-             * Returns an estimate of the number of threads waiting on
-             * this condition.
-             * Implements {@link TedissonAbstractQueueSynchronizer#getWaitQueueLength(TedissonAbstractQueueSynchronizer.ConditionObject)}.
-             *
-             * @return the estimated number of waiting threads
-             * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
-             *         returns {@code false}
-             */
+
             protected final int getWaitQueueLength() {
                 if (!isHeldExclusively())
                     throw new IllegalMonitorStateException();
@@ -1382,15 +1110,7 @@ public class TedissonAbstractQueueSynchronizer extends AbstractOwnableSynchroniz
                 return n;
             }
 
-            /**
-             * Returns a collection containing those threads that may be
-             * waiting on this Condition.
-             * Implements {@link TedissonAbstractQueueSynchronizer#getWaitingThreads(TedissonAbstractQueueSynchronizer.ConditionObject)}.
-             *
-             * @return the collection of threads
-             * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
-             *         returns {@code false}
-             */
+
             protected final Collection<Thread> getWaitingThreads() {
                 if (!isHeldExclusively())
                     throw new IllegalMonitorStateException();

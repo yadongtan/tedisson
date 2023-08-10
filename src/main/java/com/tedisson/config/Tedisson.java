@@ -1,8 +1,6 @@
 package com.tedisson.config;
 
-import com.tedisson.lock.HashLockInterface;
-import com.tedisson.lock.TReentrantLock;
-import com.tedisson.lock.WakeupLock;
+import com.tedisson.lock.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +19,7 @@ public class Tedisson implements TedissonClient {
 
     public Tedisson(Config config) {
         this.config = config;
-        this.connectionManager = new ConnectionManager(config);
+        this.connectionManager = ConfigSupport.createConnectionManager(config);
         this.locks = new ConcurrentHashMap<>();
         this.wakeupLockMap = new ConcurrentHashMap<>();
         this.connectionManager.subscribeLockChannel(wakeupLockMap, Config.LOCK_RELEASE_CHANNEL);
@@ -32,7 +30,7 @@ public class Tedisson implements TedissonClient {
     }
 
     @Override
-    public TReentrantLock getLock(String lockname) {
+    public TLock getReentrantLock(String lockname) {
         Lock lock = locks.get(lockname);
         if(lock == null){
             synchronized (locks){
@@ -46,6 +44,23 @@ public class Tedisson implements TedissonClient {
                 }
             }
         }
-        return (TReentrantLock) lock;
+        return (TLock) lock;
+    }
+
+    public TLock getRedLock(String lockname){
+        Lock lock = locks.get(lockname);
+        if(lock == null){
+            synchronized (locks){
+                lock = locks.get(lockname);
+                if (lock == null) {
+                    StringRedLockInterface hashLockInterface = new StringRedLockInterface(this.connectionManager, lockname);
+                    RedLock newLock = new RedLock(hashLockInterface);
+                    wakeupLockMap.put(hashLockInterface.getLockName(), newLock);
+                    locks.put(lockname, newLock);
+                    return newLock;
+                }
+            }
+        }
+        return (TLock) lock;
     }
 }

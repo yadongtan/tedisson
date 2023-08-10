@@ -4,19 +4,23 @@ package com.tedisson.test;
 import com.tedisson.config.Config;
 import com.tedisson.config.Tedisson;
 import com.tedisson.config.TedissonClient;
-import com.tedisson.lock.TReentrantLock;
+import com.tedisson.lock.TLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
 public class TReentrantLockTest2 {
+
+    private static final Logger log = LoggerFactory.getLogger(TReentrantLockTest1.class);
+
     public static void main(String[] args) throws InterruptedException {
 
         // 创建基于Redis的可重入分布式锁
         Config config = new Config();
-        config.setHost("120.26.76.100");
+        config.useSingleServer().setAddress("120.26.76.100");
         TedissonClient tedissonClient = Tedisson.create(config);
-
-        TReentrantLock lock = tedissonClient.getLock("lock-test-1");
+        TLock lock = tedissonClient.getReentrantLock("lock-test-1");
 
         Thread thread1 = new Thread(() -> {
             System.out.println("线程1等待获取锁");

@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.*;
 
-public class BaseLock implements Lock, WakeupLock{
+public class TLock implements Lock, WakeupLock{
 
     private final TedissonSync sync;
 
-    public BaseLock(RedisLockInterface lockInterface) {
+    public TLock(RedisLockInterface lockInterface) {
         // 创建同步队列
         sync = new TedissonSync(lockInterface);
     }
