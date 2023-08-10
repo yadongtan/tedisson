@@ -40,13 +40,8 @@ public class HashLockInterface extends ExpirableLockInterface {
                     "local newTTL = tonumber(ARGV[2]); " +
                     "local exists = redis.call('HEXISTS', key, field); " +
                     "if exists == 1 then " +
-                    "   local oldTTL = redis.call('TTL', key); " +
-                    "   if oldTTL > 0 and oldTTL < newTTL * 0.5 then " +
-                    "       redis.call('EXPIRE', key, newTTL); " +
-                    "       return 1; " +
-                    "   else " +
-                    "       return 0; " +
-                    "   end " +
+                    "   redis.call('EXPIRE', key, newTTL); " +
+                    "   return 1; " +
                     "else " +
                     "   return -1; " +
                     "end";

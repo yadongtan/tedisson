@@ -27,8 +27,9 @@ public class TedissonSync extends TedissonAbstractQueueSynchronizer {
                 // 判断是否是第一次, 是就添加到看门狗
                 if(getOwner() == null || getOwner() != Thread.currentThread()){
                     //添加到看门狗
-                    RenewExpirationManager.EXPIRATION_RENEWAL_MAP.putIfAbsent(li.getCurrentThreadName(), this);
-                    log.info("将 " +li.getCurrentThreadName() + " 添加到看门狗");
+                    //RenewExpirationManager.EXPIRATION_RENEWAL_MAP.putIfAbsent(li.getCurrentThreadName(), this);
+                    RenewExpirationManager.addToWatchDog(Thread.currentThread(), li);
+                    log.info("将 " + li.getCurrentThreadName() + " 添加到看门狗");
                 }
                 setExclusiveOwnerThread(Thread.currentThread());
             }
@@ -47,12 +48,12 @@ public class TedissonSync extends TedissonAbstractQueueSynchronizer {
             return true;
         }
         if(count == 0){
-            // 从看门狗中移除
-            if(lockInterface instanceof ExpirableLockInterface){
-                ExpirableLockInterface li = (ExpirableLockInterface) lockInterface;
-                RenewExpirationManager.EXPIRATION_RENEWAL_MAP.remove(li.getCurrentThreadName());
-                log.info("将 " +li.getCurrentThreadName() + " 从看门狗中移除");
-            }
+//            // 从看门狗中移除
+//            if(lockInterface instanceof ExpirableLockInterface){
+//                ExpirableLockInterface li = (ExpirableLockInterface) lockInterface;
+//                RenewExpirationManager.EXPIRATION_RENEWAL_MAP.remove(li.getCurrentThreadName());
+//                log.info("将 " +li.getCurrentThreadName() + " 从看门狗中移除");
+//            }
             setExclusiveOwnerThread(null);
             return true;
         }else{
