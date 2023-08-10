@@ -1,5 +1,6 @@
 package com.tedisson.lock;
 
+import com.tedisson.config.Config;
 import com.tedisson.config.ConnectionManager;
 
 public class HashLockInterface extends ExpirableLockInterface {
@@ -74,7 +75,7 @@ public class HashLockInterface extends ExpirableLockInterface {
     }
 
     public int releaseLock() {
-        Object result = connectionManager.eval(RELEASE_SCRIPT, 1, lockName, getCurrentThreadName(), CManager.LOCK_RELEASE_CHANNEL);
+        Object result = connectionManager.eval(RELEASE_SCRIPT, 1, lockName, getCurrentThreadName(), Config.LOCK_RELEASE_CHANNEL);
         return Integer.parseInt(result.toString());
     }
 }

@@ -4,7 +4,6 @@ import com.tedisson.config.Config;
 import com.tedisson.config.Tedisson;
 import com.tedisson.config.TedissonClient;
 import com.tedisson.lock.TLock;
-import com.tedisson.lock.TReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,7 +1,6 @@
 package com.tedisson.config;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ClusterServersConfig extends BaseConfig{

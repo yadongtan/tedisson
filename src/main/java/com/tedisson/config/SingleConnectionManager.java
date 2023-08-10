@@ -9,7 +9,6 @@ import redis.clients.jedis.JedisPubSub;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class SingleConnectionManager extends AbstractConnectionManager {
 

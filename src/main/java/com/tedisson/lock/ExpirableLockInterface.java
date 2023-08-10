@@ -2,7 +2,6 @@ package com.tedisson.lock;
 
 import com.tedisson.config.ConnectionManager;
 
-import java.util.concurrent.TimeUnit;
 
 public abstract class ExpirableLockInterface extends BaseRedisLockInterface{
 

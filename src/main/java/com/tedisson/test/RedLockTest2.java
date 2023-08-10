@@ -2,7 +2,6 @@ package com.tedisson.test;
 
 
 import com.tedisson.config.Config;
-import com.tedisson.config.RedisNode;
 import com.tedisson.config.Tedisson;
 import com.tedisson.config.TedissonClient;
 import com.tedisson.lock.TLock;
